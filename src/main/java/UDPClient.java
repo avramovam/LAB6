@@ -55,6 +55,9 @@ public class UDPClient {
                     case "exit":
                         command = new ExitCommand();
                         break;
+                    case "show":
+                        command = new ShowCommand();
+                        break;
                     default:
                         System.out.println("Unknown command.");
                         continue; // Пропускаем отправку на сервер
@@ -115,6 +118,12 @@ public class UDPClient {
 
                                 System.out.println("Response from server: " + response);
                                 receivedResponse = true;  // Помечаем, что ответ получен
+
+                                // Проверяем, пришла ли команда "exit"
+                                if (response.equals("exit")) {
+                                    break; // Выходим из цикла обработки команд
+                                }
+
                             } else {
                                 System.out.println("No response from server.");
                             }
@@ -128,6 +137,11 @@ public class UDPClient {
                 }
 
                 if (commandName.equalsIgnoreCase("exit")) {
+                    break; // Выходим из внешнего цикла, если клиент ввел "exit"
+                }
+
+                // Если получили команду "exit" от сервера, то выходим из цикла
+                if (receivedResponse && commandName.equals("exit")) {
                     break;
                 }
             }
