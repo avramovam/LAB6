@@ -1,3 +1,8 @@
+package commands;
+
+import app.CollectionManager;
+import modules.Movie;
+
 import java.io.Serializable;
 import java.util.Map;
 

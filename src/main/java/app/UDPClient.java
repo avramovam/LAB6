@@ -1,3 +1,25 @@
+package app;
+
+import app.MovieFactory;
+import commands.*;
+import modules.Movie;
+import modules.MovieGenre;
+
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.Set;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,7 +55,10 @@ public class UDPClient {
 
             while (true) {
                 System.out.print("Enter command: ");
-                String commandName = scanner.nextLine();
+                String commandLine = scanner.nextLine();
+                String[] commandParts = commandLine.split(" ", 2);
+                String commandName = commandParts[0];
+                String commandArgs = commandParts.length > 1 ? commandParts[1] : "";
 
                 // Создаем объект команды (пока просто имя команды)
                 Object command = null;
@@ -49,14 +74,46 @@ public class UDPClient {
                         // Создаем объект AddCommand
                         command = new AddCommand(addCommandArgs);
                         break;
+                    case "show":
+                        command = new ShowCommand();
+                        break;
+                    case "remove_by_id":
+                        try {
+                            int id = Integer.parseInt(commandArgs);
+                            command = new RemoveByIdCommand(id);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid ID format. Please enter a valid number.");
+                            continue;
+                        }
+                        break;
+                    case "update":
+                        try {
+                            String[] updateParts = commandArgs.split(" ", 2);
+                            int updateId = Integer.parseInt(updateParts[0]);
+                            Movie updatedMovie = MovieFactory.createMovie();
+                            command = new UpdateCommand(updateId, updatedMovie);
+                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                            System.out.println("Invalid command format. Please use 'update id'.");
+                            continue;
+                        }
+                        break;
+                    case "remove_head":
+                        command = new RemoveHeadCommand();
+                        break;
                     case "help":
                         command = new HelpCommand();
                         break;
                     case "exit":
                         command = new ExitCommand();
                         break;
-                    case "show":
-                        command = new ShowCommand();
+                    case "count_greater_than_genre":
+                        try {
+                            MovieGenre genre = MovieGenre.valueOf(commandArgs.toUpperCase());
+                            command = new CountGreaterThanGenreCommand(genre);
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Invalid genre. Please enter a valid genre.");
+                            continue;
+                        }
                         break;
                     default:
                         System.out.println("Unknown command.");

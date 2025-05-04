@@ -1,3 +1,5 @@
+package modules;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -51,7 +53,7 @@ public class Location implements Serializable {
 
     @Override
     public String toString() {
-        return "Location{" +
+        return "Modules.Location{" +
                 "x=" + x +
                 ", y=" + y +
                 ", name='" + name + '\'' +

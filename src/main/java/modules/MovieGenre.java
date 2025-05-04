@@ -1,3 +1,5 @@
+package modules;
+
 import java.io.Serializable;
 
 public enum MovieGenre implements Serializable {

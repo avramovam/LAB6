@@ -1,3 +1,7 @@
+package commands;
+
+import modules.Movie;
+
 import java.io.Serializable;
 
 public class AddCommandArgs implements Serializable {

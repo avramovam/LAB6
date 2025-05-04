@@ -1,3 +1,7 @@
+package app;
+
+import modules.*;
+
 import java.util.Scanner;
 
 public class MovieFactory {

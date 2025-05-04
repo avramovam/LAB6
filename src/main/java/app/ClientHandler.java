@@ -1,3 +1,7 @@
+package app;
+
+import commands.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -6,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Map;
 
 public class ClientHandler implements Runnable {
 
@@ -51,21 +54,39 @@ public class ClientHandler implements Runnable {
             String response;
 
             if (commandObject instanceof AddCommand) {
-                System.out.println("Received AddCommand");
+                System.out.println("Received Commands.AddCommand");
                 AddCommand command = (AddCommand) commandObject;
                 response = command.execute(collectionManager, null);
                 System.out.println("Response from execute: " + response);  // Add this line
             } else if (commandObject instanceof ShowCommand) {
-                System.out.println("Received ShowCommand");
+                System.out.println("Received Commands.ShowCommand");
                 ShowCommand command = (ShowCommand) commandObject;
                 response = command.execute(collectionManager, null);
             } else if (commandObject instanceof HelpCommand) {
-                System.out.println("Received HelpCommand");
+                System.out.println("Received Commands.HelpCommand");
                 HelpCommand command = (HelpCommand) commandObject;
                 response = command.execute(collectionManager, null);
             } else if (commandObject instanceof ExitCommand) {
-                System.out.println("Received ExitCommand");
+                System.out.println("Received Commands.ExitCommand");
                 ExitCommand command = (ExitCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof RemoveByIdCommand) {
+                System.out.println("Received RemoveCommand");
+                RemoveByIdCommand command = (RemoveByIdCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof UpdateCommand) {
+                System.out.println("Received Commands.UpdateCommand");
+                UpdateCommand command = (UpdateCommand) commandObject;
+                response = command.execute(collectionManager, null);
+
+            } else if (commandObject instanceof RemoveHeadCommand) {
+                System.out.println("Received Commands.RemoveHeadCommand");
+                RemoveHeadCommand command = (RemoveHeadCommand) commandObject;
+                response = command.execute(collectionManager, null);
+
+            } else if (commandObject instanceof CountGreaterThanGenreCommand){
+                System.out.println("Received Commands.CountGreaterThanGenreCommand");
+                CountGreaterThanGenreCommand command = (CountGreaterThanGenreCommand) commandObject;
                 response = command.execute(collectionManager, null);
             }
             else {

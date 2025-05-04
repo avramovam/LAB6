@@ -1,3 +1,5 @@
+package modules;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -52,6 +54,10 @@ public class Movie implements Serializable, Comparable<Movie> {
 
     public LocalDateTime getCreationDate() {
         return creationDate;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
     }
 
     public int getOscarsCount() {
@@ -109,7 +115,7 @@ public class Movie implements Serializable, Comparable<Movie> {
 
     @Override
     public String toString() {
-        return "Movie{" +
+        return "Modules.Movie{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", coordinates=" + coordinates +

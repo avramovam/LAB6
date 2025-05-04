@@ -1,3 +1,5 @@
+package modules;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -51,7 +53,7 @@ public class Person implements Serializable {
 
     @Override
     public String toString() {
-        return "Person{" +
+        return "Modules.Person{" +
                 "name='" + name + '\'' +
                 ", passportID='" + passportID + '\'' +
                 ", location=" + location +

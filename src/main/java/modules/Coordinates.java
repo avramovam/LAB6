@@ -1,3 +1,5 @@
+package modules;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -41,7 +43,7 @@ public class Coordinates implements Serializable {
 
     @Override
     public String toString() {
-        return "Coordinates{" +
+        return "Modules.Coordinates{" +
                 "x=" + x +
                 ", y=" + y +
                 '}';

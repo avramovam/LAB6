@@ -1,3 +1,5 @@
+package app;
+
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Scanner;
