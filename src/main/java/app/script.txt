@@ -1,0 +1,4 @@
+show
+help
+max_by_id
+execute_script /Users/macbook/Desktop/лабы/Java/Lab6/src/main/java/app/script2.txt

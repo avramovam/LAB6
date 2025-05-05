@@ -1,5 +1,6 @@
 package app;
 
+import commands.*;
 import modules.*;
 
 import java.io.*;
@@ -15,6 +16,7 @@ public class CollectionManager {
     private Integer nextId = 1;
     private static final String FILE_NAME = "src/main/resources/collection.csv";
     private LocalDateTime initializationDate;
+    private Set<String> executedScripts = new HashSet<>();
 
     public CollectionManager() {
         this.initializationDate = LocalDateTime.now();
@@ -87,9 +89,6 @@ public class CollectionManager {
         return "Removed " + removedCount + " movies greater than the specified movie.";
     }
 
-    private int compareCoordinates(Coordinates c1, Coordinates c2) {
-        return c1.getX().compareTo(c2.getX());
-    }
 
     public String minByCoordinates() {
         if (movies.isEmpty()) {
@@ -98,7 +97,7 @@ public class CollectionManager {
 
         Movie minMovie = movies.peek();
         for (Movie movie : movies) {
-            if (compareCoordinates(movie.getCoordinates(), minMovie.getCoordinates()) < 0) {
+            if ((movie.getCoordinates().compareTo(minMovie.getCoordinates())) < 0) {
                 minMovie = movie;
             }
         }
@@ -120,6 +119,106 @@ public class CollectionManager {
         return "Collection type: " + movies.getClass().getName() + "\n" +
                 "Initialization date: " + initializationDate + "\n" +
                 "Number of elements: " + movies.size();
+    }
+
+    public String executeScript(String fileName) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            StringBuilder result = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                String[] commandParts = line.split(" ", 2);
+                String commandName = commandParts[0];
+                String commandArgs = commandParts.length > 1 ? commandParts[1] : "";
+
+                Command command = null;
+                switch (commandName) {
+                    case "add":
+                        Movie movie = MovieFactory.createMovie();
+                        command = new AddCommand(new AddCommandArgs(movie));
+                        break;
+                    case "show":
+                        command = new ShowCommand();
+                        break;
+                    case "remove_by_id":
+                        try {
+                            int id = Integer.parseInt(commandArgs);
+                            command = new RemoveByIdCommand(id);
+                        } catch (NumberFormatException e) {
+                            result.append("Invalid ID format. Please enter a valid number.\n");
+                            continue;
+                        }
+                        break;
+                    case "update":
+                        try {
+                            String[] updateParts = commandArgs.split(" ", 2);
+                            int updateId = Integer.parseInt(updateParts[0]);
+                            Movie updatedMovie = MovieFactory.createMovie();
+                            command = new UpdateCommand(updateId, updatedMovie);
+                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                            result.append("Invalid command format. Please use 'update id'.\n");
+                            continue;
+                        }
+                        break;
+                    case "remove_head":
+                        command = new RemoveHeadCommand();
+                        break;
+                    case "clear":
+                        command = new ClearCommand();
+                        break;
+                    case "execute_script":
+                        command = new ExecuteScriptCommand(commandArgs);
+                        break;
+                    case "count_greater_than_genre":
+                        try {
+                            MovieGenre genre = MovieGenre.valueOf(commandArgs.toUpperCase());
+                            command = new CountGreaterThanGenreCommand(genre);
+                        } catch (IllegalArgumentException e) {
+                            result.append("Invalid genre. Please enter a valid genre.\n");
+                            continue;
+                        }
+                        break;
+                    case "add_if_min":
+                        Movie newMovie = MovieFactory.createMovie();
+                        command = new AddIfMinCommand(newMovie);
+                        break;
+                    case "remove_greater":
+                        Movie greaterMovie = MovieFactory.createMovie();
+                        command = new RemoveGreaterCommand(greaterMovie);
+                        break;
+                    case "min_by_coordinates":
+                        command = new MinByCoordinatesCommand();
+                        break;
+                    case "max_by_id":
+                        command = new MaxByIdCommand();
+                        break;
+                    case "help":
+                        command = new HelpCommand();
+                        break;
+                    case "exit":
+                        command = new ExitCommand();
+                        break;
+                    default:
+                        result.append("Unknown command.\n");
+                        continue;
+                }
+
+                if (command != null) {
+                    result.append(command.execute(this, null)).append("\n");
+                }
+            }
+            return result.toString();
+        } catch (IOException e) {
+            return "Error executing script: " + e.getMessage();
+        }
+    }
+
+    public boolean checkIdExists(int id) {
+        for (Movie movie : movies) {
+            if (movie.getId() == id) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String save() {

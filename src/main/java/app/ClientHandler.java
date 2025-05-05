@@ -108,6 +108,18 @@ public class ClientHandler implements Runnable {
                 System.out.println("Received Commands.InfoCommand");
                 InfoCommand command = (InfoCommand) commandObject;
                 response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof ExecuteScriptCommand) {
+                System.out.println("Received Commands.ExecuteScriptCommand");
+                ExecuteScriptCommand command = (ExecuteScriptCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof ClearCommand) {
+                System.out.println("Received Commands.ClearCommand");
+                ClearCommand command = (ClearCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof CheckIdCommand) {
+                System.out.println("Received Commands.CheckIdCommand");
+                CheckIdCommand command = (CheckIdCommand) commandObject;
+                response = command.execute(collectionManager, null);
             }
             else {
                 response = "Unknown command object received.";

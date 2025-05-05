@@ -3,7 +3,7 @@ package modules;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Person implements Serializable {
+public class Person implements Serializable, Comparable<Person> {
     private String name; // Поле не может быть null, Строка не может быть пустой
     private String passportID; // Поле не может быть null
     private Location location; // Поле может быть null
@@ -13,7 +13,6 @@ public class Person implements Serializable {
         this.passportID = passportID;
         this.location = location;
     }
-
     public String getName() {
         return name;
     }
@@ -39,21 +38,13 @@ public class Person implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Person person = (Person) o;
-        return name.equals(person.name) && passportID.equals(person.passportID) && Objects.equals(location, person.location);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, passportID, location);
+    public int compareTo(Person other) {
+        return this.name.compareTo(other.name);
     }
 
     @Override
     public String toString() {
-        return "Modules.Person{" +
+        return "Person{" +
                 "name='" + name + '\'' +
                 ", passportID='" + passportID + '\'' +
                 ", location=" + location +

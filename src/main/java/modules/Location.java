@@ -39,21 +39,8 @@ public class Location implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Location location = (Location) o;
-        return x == location.x && Double.compare(location.y, y) == 0 && Objects.equals(name, location.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y, name);
-    }
-
-    @Override
     public String toString() {
-        return "Modules.Location{" +
+        return "Location{" +
                 "x=" + x +
                 ", y=" + y +
                 ", name='" + name + '\'' +

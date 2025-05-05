@@ -3,7 +3,7 @@ package modules;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Coordinates implements Serializable {
+public class Coordinates implements Serializable, Comparable<Coordinates> {
     private Double x; // Поле не может быть null
     private long y; // Значение поля должно быть больше -177
 
@@ -12,11 +12,11 @@ public class Coordinates implements Serializable {
         this.y = y;
     }
 
-    public Double getX() {
+    public double getX() {
         return x;
     }
 
-    public void setX(Double x) {
+    public void setX(double x) {
         this.x = x;
     }
 
@@ -29,21 +29,17 @@ public class Coordinates implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Coordinates that = (Coordinates) o;
-        return y == that.y && x.equals(that.x);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y);
+    public int compareTo(Coordinates other) {
+        int xComparison = Double.compare(this.x, other.x);
+        if (xComparison != 0) {
+            return xComparison;
+        }
+        return Long.compare(this.y, other.y);
     }
 
     @Override
     public String toString() {
-        return "Modules.Coordinates{" +
+        return "Coordinates{" +
                 "x=" + x +
                 ", y=" + y +
                 '}';

@@ -20,19 +20,6 @@ import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.util.Iterator;
-import java.util.Scanner;
-import java.util.Set;
 
 public class UDPClient {
 
@@ -90,6 +77,13 @@ public class UDPClient {
                         try {
                             String[] updateParts = commandArgs.split(" ", 2);
                             int updateId = Integer.parseInt(updateParts[0]);
+
+                            // Проверяем наличие элемента с таким id
+                            if (!checkIdExists(updateId, channel, serverAddress, selector)) {
+                                System.out.println("Movie with id " + updateId + " not found.");
+                                continue;
+                            }
+
                             Movie updatedMovie = MovieFactory.createMovie();
                             command = new UpdateCommand(updateId, updatedMovie);
                         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
@@ -100,11 +94,11 @@ public class UDPClient {
                     case "remove_head":
                         command = new RemoveHeadCommand();
                         break;
-                    case "help":
-                        command = new HelpCommand();
+                    case "clear":
+                        command = new ClearCommand();
                         break;
-                    case "exit":
-                        command = new ExitCommand();
+                    case "execute_script":
+                        command = new ExecuteScriptCommand(commandArgs);
                         break;
                     case "count_greater_than_genre":
                         try {
@@ -119,7 +113,6 @@ public class UDPClient {
                         Movie newMovie = MovieFactory.createMovie();
                         command = new AddIfMinCommand(newMovie);
                         break;
-
                     case "remove_greater":
                         Movie greaterMovie = MovieFactory.createMovie();
                         command = new RemoveGreaterCommand(greaterMovie);
@@ -130,8 +123,11 @@ public class UDPClient {
                     case "max_by_id":
                         command = new MaxByIdCommand();
                         break;
-                    case "info":
-                        command = new InfoCommand();
+                    case "help":
+                        command = new HelpCommand();
+                        break;
+                    case "exit":
+                        command = new ExitCommand();
                         break;
                     default:
                         System.out.println("Unknown command.");
@@ -228,5 +224,71 @@ public class UDPClient {
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Client error: " + e.getMessage());
         }
+    }
+
+    private static boolean checkIdExists(int id, DatagramChannel channel, InetSocketAddress serverAddress, Selector selector) throws IOException, ClassNotFoundException {
+        // Создаем команду для проверки наличия элемента с таким id
+        CheckIdCommand checkIdCommand = new CheckIdCommand(id);
+
+        // Сериализуем команду
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(checkIdCommand);
+        byte[] data = baos.toByteArray();
+
+        // Отправляем команду на сервер
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        channel.send(buffer, serverAddress);
+
+        // Ждем ответа от сервера
+        boolean receivedResponse = false;
+        int attempts = 0;
+        int maxAttempts = 3;
+
+        while (!receivedResponse && attempts < maxAttempts) {
+            attempts++;
+            System.out.println("Waiting for response (attempt " + attempts + ")...");
+
+            // ждем, пока канал станет готовым для чтения или истечет таймаут
+            int readyChannels = selector.select(5000); // ждем 5 секунд
+
+            if (readyChannels == 0) {
+                System.out.println("Server is not responding. Retrying...");
+                continue; // Повторяем попытку отправки команды
+            }
+
+            Set<SelectionKey> keys = selector.selectedKeys();
+            Iterator<SelectionKey> keyIterator = keys.iterator();
+
+            while (keyIterator.hasNext()) {
+                SelectionKey key = keyIterator.next();
+
+                if (key.isReadable()) {
+                    ByteBuffer receiveBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+                    InetSocketAddress responseAddress = (InetSocketAddress) channel.receive(receiveBuffer);
+
+                    if (responseAddress != null) {
+                        // Десериализуем ответ
+                        receiveBuffer.flip();
+                        byte[] responseData = new byte[receiveBuffer.remaining()];
+                        receiveBuffer.get(responseData);
+
+                        ByteArrayInputStream bais = new ByteArrayInputStream(responseData);
+                        ObjectInputStream ois = new ObjectInputStream(bais);
+                        String response = (String) ois.readObject();
+
+                        System.out.println("Response from server: " + response);
+                        receivedResponse = true;  // Помечаем, что ответ получен
+
+                        // Проверяем, существует ли элемент с таким id
+                        return response.equals("true");
+                    } else {
+                        System.out.println("No response from server.");
+                    }
+                }
+                keyIterator.remove();
+            }
+        }
+        return false;
     }
 }
