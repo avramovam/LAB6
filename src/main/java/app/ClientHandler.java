@@ -88,6 +88,26 @@ public class ClientHandler implements Runnable {
                 System.out.println("Received Commands.CountGreaterThanGenreCommand");
                 CountGreaterThanGenreCommand command = (CountGreaterThanGenreCommand) commandObject;
                 response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof AddIfMinCommand) {
+                System.out.println("Received Commands.AddIfMinCommand");
+                AddIfMinCommand command = (AddIfMinCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof RemoveGreaterCommand) {
+                System.out.println("Received Commands.RemoveGreaterCommand");
+                RemoveGreaterCommand command = (RemoveGreaterCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof MinByCoordinatesCommand) {
+                System.out.println("Received Commands.MinByCoordinatesCommand");
+                MinByCoordinatesCommand command = (MinByCoordinatesCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof MaxByIdCommand) {
+                System.out.println("Received Commands.MaxByIdCommand");
+                MaxByIdCommand command = (MaxByIdCommand) commandObject;
+                response = command.execute(collectionManager, null);
+            } else if (commandObject instanceof InfoCommand) {
+                System.out.println("Received Commands.InfoCommand");
+                InfoCommand command = (InfoCommand) commandObject;
+                response = command.execute(collectionManager, null);
             }
             else {
                 response = "Unknown command object received.";

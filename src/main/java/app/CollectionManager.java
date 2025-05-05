@@ -14,8 +14,10 @@ public class CollectionManager {
     private Queue<Movie> movies = new PriorityQueue<>();
     private Integer nextId = 1;
     private static final String FILE_NAME = "src/main/resources/collection.csv";
+    private LocalDateTime initializationDate;
 
     public CollectionManager() {
+        this.initializationDate = LocalDateTime.now();
         load();
     }
 
@@ -62,6 +64,62 @@ public class CollectionManager {
     public String clear() {
         movies.clear();
         return "Collection cleared successfully.";
+    }
+
+    public String addIfMin(Movie movie) {
+        if (movies.isEmpty() || movie.compareTo(movies.peek()) < 0) {
+            movie.setId(getNextId());
+            movies.add(movie);
+            return "Movie added successfully.";
+        } else {
+            return "Movie is not the smallest. Not added.";
+        }
+    }
+
+    public String removeGreater(Movie movie) {
+        int removedCount = 0;
+        for (Movie m : new PriorityQueue<>(movies)) {
+            if (m.compareTo(movie) > 0) {
+                movies.remove(m);
+                removedCount++;
+            }
+        }
+        return "Removed " + removedCount + " movies greater than the specified movie.";
+    }
+
+    private int compareCoordinates(Coordinates c1, Coordinates c2) {
+        return c1.getX().compareTo(c2.getX());
+    }
+
+    public String minByCoordinates() {
+        if (movies.isEmpty()) {
+            return "Collection is empty";
+        }
+
+        Movie minMovie = movies.peek();
+        for (Movie movie : movies) {
+            if (compareCoordinates(movie.getCoordinates(), minMovie.getCoordinates()) < 0) {
+                minMovie = movie;
+            }
+        }
+        return minMovie.toString();
+    }
+
+    public String maxById() {
+        if (movies.isEmpty()) {
+            return "Collection is empty.";
+        } else {
+            Movie maxMovie = movies.stream()
+                    .max((m1, m2) -> Integer.compare(m1.getId(), m2.getId()))
+                    .orElse(null);
+            return maxMovie != null ? maxMovie.toString() : "No movie found.";
+        }
+    }
+
+    public String getInfo() {
+        return "Collection type: " + movies.getClass().getName() + "\n" +
+                "Initialization date: " + initializationDate + "\n" +
+                "Number of elements: " + movies.size();
     }
 
     public String save() {

@@ -115,6 +115,24 @@ public class UDPClient {
                             continue;
                         }
                         break;
+                    case "add_if_min":
+                        Movie newMovie = MovieFactory.createMovie();
+                        command = new AddIfMinCommand(newMovie);
+                        break;
+
+                    case "remove_greater":
+                        Movie greaterMovie = MovieFactory.createMovie();
+                        command = new RemoveGreaterCommand(greaterMovie);
+                        break;
+                    case "min_by_coordinates":
+                        command = new MinByCoordinatesCommand();
+                        break;
+                    case "max_by_id":
+                        command = new MaxByIdCommand();
+                        break;
+                    case "info":
+                        command = new InfoCommand();
+                        break;
                     default:
                         System.out.println("Unknown command.");
                         continue; // Пропускаем отправку на сервер

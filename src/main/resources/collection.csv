@@ -1,4 +1,4 @@
 id,name,coordinates_x,coordinates_y,creationDate,oscarsCount,length,genre,mpaaRating,director_name,director_passportID,director_location_x,director_location_y,director_location_name
 4,1,1.0,1,2025-05-04T22:07:47.498212,1,1,COMEDY,G,1,1,1,1.0,
-1,name,1.0,1,2025-05-04T20:51:39.237126,1,1,null,null,1,1,1,1.0,
 3,12,12.0,1,2025-05-04T22:06:30.545811,1,1,DRAMA,G,1,1,1,1.0,
+5,name,1.0,1,2025-05-05T14:01:46.202292,1,1,null,null,1,1,1,1.0,1
