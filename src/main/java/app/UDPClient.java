@@ -97,6 +97,9 @@ public class UDPClient {
                     case "clear":
                         command = new ClearCommand();
                         break;
+                    case "info":
+                        command = new InfoCommand();
+                        break;
                     case "execute_script":
                         command = new ExecuteScriptCommand(commandArgs);
                         break;

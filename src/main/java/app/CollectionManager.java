@@ -10,13 +10,16 @@ import java.util.*;
 import java.io.IOException;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.io.*;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.stream.Collectors;
 
 public class CollectionManager {
     private Queue<Movie> movies = new PriorityQueue<>();
     private Integer nextId = 1;
-    private static final String FILE_NAME = "src/main/resources/collection.csv";
+    private static final String FILE_NAME = "/Users/macbook/Desktop/лабы/Java/Lab6/src/main/resources/collection.csv";
     private LocalDateTime initializationDate;
-    private Set<String> executedScripts = new HashSet<>();
 
     public CollectionManager() {
         this.initializationDate = LocalDateTime.now();
@@ -24,29 +27,35 @@ public class CollectionManager {
     }
 
     public String add(Movie movie) {
-        movie.setId(getNextId());
-        movies.add(movie);
-        return "Movie added successfully.";
+        if (isPassportIdUnique(movie.getDirector().getPassportID())) {
+            movie.setId(getNextId());
+            movies.add(movie);
+            return "Movie added successfully.";
+        } else {
+            return "PassportID must be unique. Movie not added.";
+        }
+    }
+
+    private boolean isPassportIdUnique(String passportID) {
+        for (Movie movie : movies) {
+            if (movie.getDirector().getPassportID().equals(passportID)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public Integer getNextId() {
         return nextId++;
     }
 
-    public String remove(Movie movie) {
-        if (movies.remove(movie)) {
-            return "Movie removed successfully.";
-        } else {
-            return "Movie not found.";
-        }
-    }
 
     public String show() {
         if (movies.isEmpty()) {
             return "Collection is empty.";
         } else {
             StringBuilder sb = new StringBuilder();
-            for (Movie movie : movies) {
+            for (Movie movie : movies.stream().sorted((m1, m2) -> m1.getId().compareTo(m2.getId())).collect(Collectors.toList())) {
                 sb.append(movie.toString()).append("\n");
             }
             return "Collection:\n" + sb.toString();
@@ -54,13 +63,8 @@ public class CollectionManager {
     }
 
     public String removeById(int id) {
-        for (Movie movie : movies) {
-            if (movie.getId() == id) {
-                movies.remove(movie);
-                return "Movie with id " + id + " removed successfully.";
-            }
-        }
-        return "Movie with id " + id + " not found.";
+        boolean removed = movies.removeIf(movie -> movie.getId() == id);
+        return removed ? "Movie with id " + id + " removed successfully." : "Movie with id " + id + " not found.";
     }
 
     public String clear() {
@@ -68,19 +72,88 @@ public class CollectionManager {
         return "Collection cleared successfully.";
     }
 
+    public String save() {
+        try (FileWriter writer = new FileWriter(FILE_NAME)) {
+            writer.append("id,name,coordinates_x,coordinates_y,creationDate,oscarsCount,length,genre,mpaaRating,director_name,director_passportID,director_location_x,director_location_y,director_location_name\n");
+            for (Movie movie : movies) {
+                writer.append(movieToCsv(movie)).append("\n");
+            }
+            return "Collection saved successfully.";
+        } catch (IOException e) {
+            return "Error saving collection: " + e.getMessage();
+        }
+    }
+
+    private String movieToCsv(Movie movie) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(movie.getId()).append(",");
+        sb.append(movie.getName()).append(",");
+        sb.append(movie.getCoordinates().getX()).append(",");
+        sb.append(movie.getCoordinates().getY()).append(",");
+        sb.append(movie.getCreationDate()).append(",");
+        sb.append(movie.getOscarsCount()).append(",");
+        sb.append(movie.getLength()).append(",");
+        sb.append(movie.getGenre()).append(",");
+        sb.append(movie.getMpaaRating()).append(",");
+        sb.append(movie.getDirector().getName()).append(",");
+        sb.append(movie.getDirector().getPassportID()).append(",");
+        if (movie.getDirector().getLocation() != null) {
+            sb.append(movie.getDirector().getLocation().getX()).append(",");
+            sb.append(movie.getDirector().getLocation().getY()).append(",");
+            sb.append(movie.getDirector().getLocation().getName());
+        } else {
+            sb.append(",,");
+        }
+        return sb.toString();
+    }
+
+    public String update(int id, Movie updatedMovie) {
+        boolean updated = movies.stream()
+                .filter(movie -> movie.getId() == id && isPassportIdUnique(updatedMovie.getDirector().getPassportID()))
+                .findFirst()
+                .map(movie -> {
+                    updatedMovie.setId(id);
+                    movies.remove(movie);
+                    movies.add(updatedMovie);
+                    return true;
+                })
+                .orElse(false);
+        return updated ? "Movie with id " + id + " updated successfully." : "Movie with id " + id + " not found or passportID is not unique.";
+    }
+
+
+    public String removeHead() {
+        if (movies.isEmpty()) {
+            return "Collection is empty.";
+        } else {
+            Movie firstMovie = movies.poll();
+            return "First movie removed successfully: " + firstMovie.toString();
+        }
+    }
+
+    public String countGreaterThanGenre(MovieGenre genre) {
+        long count = movies.stream()
+                .filter(movie -> movie.getGenre() != null && movie.getGenre().compareTo(genre) > 0)
+                .count();
+        return "Number of movies with genre greater than " + genre + ": " + count;
+    }
+
+
     public String addIfMin(Movie movie) {
-        if (movies.isEmpty() || movie.compareTo(movies.peek()) < 0) {
+        if ((movies.isEmpty() || movie.compareTo(movies.peek()) < 0) && isPassportIdUnique(movie.getDirector().getPassportID())) {
             movie.setId(getNextId());
             movies.add(movie);
             return "Movie added successfully.";
         } else {
-            return "Movie is not the smallest. Not added.";
+            return "Movie is not the smallest or passportId is not unique. Not added.";
         }
     }
 
+
+
     public String removeGreater(Movie movie) {
         int removedCount = 0;
-        for (Movie m : new PriorityQueue<>(movies)) {
+        for (Movie m : movies) {
             if (m.compareTo(movie) > 0) {
                 movies.remove(m);
                 removedCount++;
@@ -89,19 +162,21 @@ public class CollectionManager {
         return "Removed " + removedCount + " movies greater than the specified movie.";
     }
 
+    public String getInfo() {
+        return "Collection type: " + movies.getClass().getName() + "\n" +
+                "Initialization date: " + initializationDate + "\n" +
+                "Number of elements: " + movies.size();
+    }
 
     public String minByCoordinates() {
         if (movies.isEmpty()) {
-            return "Collection is empty";
+            return "Collection is empty.";
+        } else {
+            Movie minMovie = movies.stream()
+                    .min((m1, m2) -> m1.getCoordinates().compareTo(m2.getCoordinates()))
+                    .orElse(null);
+            return minMovie != null ? minMovie.toString() : "No movie found.";
         }
-
-        Movie minMovie = movies.peek();
-        for (Movie movie : movies) {
-            if ((movie.getCoordinates().compareTo(minMovie.getCoordinates())) < 0) {
-                minMovie = movie;
-            }
-        }
-        return minMovie.toString();
     }
 
     public String maxById() {
@@ -113,12 +188,6 @@ public class CollectionManager {
                     .orElse(null);
             return maxMovie != null ? maxMovie.toString() : "No movie found.";
         }
-    }
-
-    public String getInfo() {
-        return "Collection type: " + movies.getClass().getName() + "\n" +
-                "Initialization date: " + initializationDate + "\n" +
-                "Number of elements: " + movies.size();
     }
 
     public String executeScript(String fileName) {
@@ -194,6 +263,9 @@ public class CollectionManager {
                     case "help":
                         command = new HelpCommand();
                         break;
+                    case "info":
+                        command = new InfoCommand();
+                        break;
                     case "exit":
                         command = new ExitCommand();
                         break;
@@ -212,6 +284,10 @@ public class CollectionManager {
         }
     }
 
+    public Queue<Movie> getMovies() {
+        return movies;
+    }
+
     public boolean checkIdExists(int id) {
         for (Movie movie : movies) {
             if (movie.getId() == id) {
@@ -219,70 +295,6 @@ public class CollectionManager {
             }
         }
         return false;
-    }
-
-    public String save() {
-        try (FileWriter writer = new FileWriter(FILE_NAME)) {
-            writer.append("id,name,coordinates_x,coordinates_y,creationDate,oscarsCount,length,genre,mpaaRating,director_name,director_passportID,director_location_x,director_location_y,director_location_name\n");
-            for (Movie movie : movies) {
-                writer.append(movieToCsv(movie)).append("\n");
-            }
-            return "Collection saved successfully.";
-        } catch (IOException e) {
-            return "Error saving collection: " + e.getMessage();
-        }
-    }
-
-    private String movieToCsv(Movie movie) {
-        return movie.getId() + "," +
-                movie.getName() + "," +
-                movie.getCoordinates().getX() + "," +
-                movie.getCoordinates().getY() + "," +
-                movie.getCreationDate() + "," +
-                movie.getOscarsCount() + "," +
-                movie.getLength() + "," +
-                movie.getGenre() + "," +
-                movie.getMpaaRating() + ","+
-                movie.getDirector().getName() + "," +
-                movie.getDirector().getPassportID() + "," +
-                movie.getDirector().getLocation().getX() + "," +
-                movie.getDirector().getLocation().getY() + "," +
-                movie.getDirector().getLocation().getName();
-    }
-
-    public String update(int id, Movie updatedMovie) {
-        for (Movie movie : movies) {
-            if (movie.getId() == id) {
-                updatedMovie.setId(id);
-                movies.remove(movie);
-                movies.add(updatedMovie);
-                return "Movie with id " + id + " updated successfully.";
-            }
-        }
-        return "Movie with id " + id + " not found.";
-    }
-
-    public String removeHead() {
-        if (movies.isEmpty()) {
-            return "Collection is empty.";
-        } else {
-            Movie firstMovie = movies.poll();
-            return "First movie removed successfully: " + firstMovie.toString();
-        }
-    }
-
-    public String countGreaterThanGenre(MovieGenre genre) {
-        int count = 0;
-        for (Movie movie : movies) {
-            if (movie.getGenre() != null && movie.getGenre().compareTo(genre) > 0) {
-                count++;
-            }
-        }
-        return "Number of movies with genre greater than " + genre + ": " + count;
-    }
-
-    public Queue<Movie> getMovies() {
-        return movies;
     }
 
     private void load() {
@@ -308,11 +320,13 @@ public class CollectionManager {
                     }
                 }
             }
-            System.out.println("Collection loaded successfully.");
+            System.out.println("Collection loaded successfully. Total movies: " + movies.size());
         } catch (IOException e) {
             System.err.println("Error loading collection: " + e.getMessage());
         }
     }
+
+
 
     private Movie csvToMovie(String csvLine) {
         String[] values = csvLine.split(",");

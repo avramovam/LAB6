@@ -20,6 +20,11 @@ public class Movie implements Serializable, Comparable<Movie> {
     }
 
     @Override
+    public String toString() {
+        return "Movie{id=" + id + ", name='" + name + "', coordinates=" + coordinates + ", creationDate='" + creationDate + "', oscarsCount=" + oscarsCount + ", length=" + length + ", genre=" + genre + ", mpaaRating=" + mpaaRating + ", director=" + director + "}";
+    }
+
+    @Override
     public int compareTo(Movie other) {
         if (this.name.length() != other.name.length()) {
             return Integer.compare(this.name.length(), other.name.length());
@@ -111,20 +116,5 @@ public class Movie implements Serializable, Comparable<Movie> {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, coordinates, creationDate, oscarsCount, length, genre, mpaaRating, director);
-    }
-
-    @Override
-    public String toString() {
-        return "Modules.Movie{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", coordinates=" + coordinates +
-                ", creationDate=" + creationDate +
-                ", oscarsCount=" + oscarsCount +
-                ", length=" + length +
-                ", genre=" + genre +
-                ", mpaaRating=" + mpaaRating +
-                ", director=" + director +
-                '}';
     }
 }
